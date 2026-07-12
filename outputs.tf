@@ -1,3 +1,7 @@
+output "security_center_subscription_pricings_id" {
+  description = "Map of id values across all security_center_subscription_pricings, keyed the same as var.security_center_subscription_pricings"
+  value       = { for k, v in azurerm_security_center_subscription_pricing.security_center_subscription_pricings : k => v.id }
+}
 output "security_center_subscription_pricings_extension" {
   description = "Map of extension values across all security_center_subscription_pricings, keyed the same as var.security_center_subscription_pricings"
   value       = { for k, v in azurerm_security_center_subscription_pricing.security_center_subscription_pricings : k => v.extension }
