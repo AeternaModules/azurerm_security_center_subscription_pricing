@@ -13,7 +13,7 @@ EOT
 
   type = map(object({
     tier          = string
-    resource_type = optional(string) # Default: "VirtualMachines"
+    resource_type = optional(string)
     subplan       = optional(string)
     extension = optional(list(object({
       additional_extension_properties = optional(map(string))
