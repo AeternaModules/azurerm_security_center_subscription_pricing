@@ -20,18 +20,30 @@ EOT
       name                            = string
     })))
   }))
-  # --- Unconfirmed validation candidates, derived from azurerm_security_center_subscription_pricing's provider source ---
-  # Not auto-enabled: either a bespoke provider validator we can't safely translate,
-  # or a path that crosses a list-typed block (needs its own for_each wrapping).
-  # Review, translate into a real validation{} block above, and delete once confirmed.
-  # path: tier
-  #   source:    validation.StringInSlice value list is not a literal []string - likely a generated PossibleValuesFor*() helper; resolve separately
-  # path: resource_type
-  #   condition: contains(["AI", "Api", "AppServices", "ContainerRegistry", "KeyVaults", "KubernetesService", "SqlServers", "SqlServerVirtualMachines", "StorageAccounts", "VirtualMachines", "Arm", "Dns", "OpenSourceRelationalDatabases", "Containers", "CosmosDbs", "CloudPosture"], value)
-  #   message:   must be one of: AI, Api, AppServices, ContainerRegistry, KeyVaults, KubernetesService, SqlServers, SqlServerVirtualMachines, StorageAccounts, VirtualMachines, Arm, Dns, OpenSourceRelationalDatabases, Containers, CosmosDbs, CloudPosture
-  # path: extension.name
-  #   source:    validation.StringIsNotWhiteSpace(...) - no translation rule yet, add one
-  # path: extension.additional_extension_properties[*]
-  #   source:    validation.StringIsNotWhiteSpace(...) - no translation rule yet, add one
+  validation {
+    condition = alltrue([
+      for k, v in var.security_center_subscription_pricings : (
+        v.resource_type == null || (contains(["AI", "Api", "AppServices", "ContainerRegistry", "KeyVaults", "KubernetesService", "SqlServers", "SqlServerVirtualMachines", "StorageAccounts", "VirtualMachines", "Arm", "Dns", "OpenSourceRelationalDatabases", "Containers", "CosmosDbs", "CloudPosture"], v.resource_type))
+      )
+    ])
+    error_message = "must be one of: AI, Api, AppServices, ContainerRegistry, KeyVaults, KubernetesService, SqlServers, SqlServerVirtualMachines, StorageAccounts, VirtualMachines, Arm, Dns, OpenSourceRelationalDatabases, Containers, CosmosDbs, CloudPosture"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.security_center_subscription_pricings : (
+        v.extension == null || alltrue([for item in v.extension : (length(trimspace(item.name)) > 0)])
+      )
+    ])
+    error_message = "must not be empty or only whitespace"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.security_center_subscription_pricings : (
+        v.extension == null || alltrue([for item in v.extension : (item.additional_extension_properties == null || (alltrue([for x in item.additional_extension_properties : length(trimspace(x)) > 0])))])
+      )
+    ])
+    error_message = "must not be empty or only whitespace"
+  }
+  # Note: 1 additional provider-side validator is enforced at apply time but not mirrored as validation{} blocks here (bespoke or non-mechanically-translatable).
 }
 
